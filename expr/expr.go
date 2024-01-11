@@ -20,15 +20,16 @@ func NewEngine(expr string) (*Engine, error) {
 	return &Engine{Expr: parseExpr}, nil
 }
 
-func (e *Engine) Run(m map[string]interface{}) {
+func (e *Engine) Run(m map[string]interface{}) node.ValueNode {
 	pm := parseControlMap(m)
 	if len(pm) == 0 {
 		fmt.Println("[Engine.Run]parseControlMap empty")
-		return
+		return node.NewBadNode("map empty")
 	}
 	n := eval(pm, e.Expr)
 	bValue, _ := n.(node.BoolNode)
 	fmt.Println(fmt.Sprintf("%#v", bValue))
+	return n
 }
 
 func parseControlMap(controlMap map[string]interface{}) map[string]node.ValueNode {
@@ -68,11 +69,11 @@ func eval(mem map[string]node.ValueNode, expr ast.Expr) (y node.ValueNode) {
 		op := x.Op
 		switch left.GetType() {
 		case node.TypeInt:
-			return BinaryIntExpr{}.Invoke(left, right, op)
+			return BinaryIntExpr{}.Invoke(left, right, op, expr)
 		case node.TypeFloat:
-			return BinaryFloatExpr{}.Invoke(left, right, op)
+			return BinaryFloatExpr{}.Invoke(left, right, op, expr)
 		case node.TypeBool:
-			return BinaryBoolExpr{}.Invoke(left, right, op)
+			return BinaryBoolExpr{}.Invoke(left, right, op, expr)
 		default:
 			return node.NewBadNode("a:" + right.GetTextValue() + "b:" + left.GetTextValue())
 		}

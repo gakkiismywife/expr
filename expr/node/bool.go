@@ -5,8 +5,8 @@ import "fmt"
 type BoolNode struct {
 	textValue string
 	True      bool
-	Field     string
 	Fields    []string
+	Expr      string
 }
 
 func (bNode BoolNode) GetTextValue() string {
@@ -22,7 +22,7 @@ func (bNode BoolNode) GetType() Type {
 }
 
 func (bNode BoolNode) GetField() string {
-	return bNode.Field
+	return ""
 }
 
 func (bNode BoolNode) GetFields() []string {
@@ -33,7 +33,6 @@ func NewBoolNode(b bool, filed string) ValueNode {
 	return BoolNode{
 		True:      b,
 		textValue: fmt.Sprintf("%t", b),
-		Field:     filed,
 		Fields:    []string{filed},
 	}
 }
