@@ -37,10 +37,10 @@ func parseControlMap(controlMap map[string]interface{}) map[string]node.ValueNod
 	for key, value := range controlMap {
 		switch value.(type) {
 		case int:
-			n := node.NewInt(int64(value.(int)), key)
+			n := node.NewFloat64(float64(value.(int)), key)
 			nodeMap[key] = n
 		case int64:
-			n := node.NewInt(value.(int64), key)
+			n := node.NewFloat64(float64(value.(int64)), key)
 			nodeMap[key] = n
 		case float64:
 			// value from json will be always float64

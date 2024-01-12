@@ -24,8 +24,8 @@ type ValueNode interface {
 func NewNodeByLit(x *ast.BasicLit) ValueNode {
 	switch x.Kind {
 	case token.INT:
-		i, _ := strconv.ParseInt(x.Value, 10, 64)
-		return NewInt(i, "")
+		i, _ := strconv.ParseFloat(x.Value, 64)
+		return NewFloat64(i, "")
 	default:
 		f, _ := strconv.ParseFloat(x.Value, 64)
 		return NewFloat64(f, "")

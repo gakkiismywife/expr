@@ -96,16 +96,28 @@ func (b BinaryBoolExpr) Invoke(x, y node.ValueNode, op token.Token, expr ast.Exp
 	default:
 		return node.NewBadNode(fmt.Sprintf("unsupported binary operator: %s", op.String()))
 	}
+	//主要是为了备忘
+	//1. bool值的比较主要是两个表达式比较后的结果属于是汇总
+	//例如 a > 1 || b < 2 只有在a>1和b<2都比较完之后才可能出现bool和bool值的比较
+	//我这里没有考虑 == true 和 非 抑或之类的情况
+	//2. 所以在bool的节点来汇总字段和表达式
+
 	bn := n.(node.BoolNode)
+	//如果当前结果为false 说明当前表达式不成立 直接返回
 	if bn.True == false {
 		return bn
 	}
+	// 命中的字段
 	var fields []string
+	// 表达式集合
 	var exprCollect string
+
+	//两个表达式相比较 如果左边的为true 说明左边的字段都是命中的，将左边的表达式拼接起来
 	if xb.True {
 		fields = append(fields, xb.Fields...)
 		exprCollect = fmt.Sprintf("%s", xb.Expr)
 	}
+	//两个表达式相比较 如果右边的为true 说明右边的字段都是命中的，将右边表达式拼接起来
 	if yb.True {
 		exprCollect += fmt.Sprintf("%s%s", condition, yb.Expr)
 		fields = append(fields, yb.Fields...)
