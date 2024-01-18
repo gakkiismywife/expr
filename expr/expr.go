@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/parser"
+	"go/token"
 )
 
 type Engine struct {
@@ -54,6 +55,7 @@ func parseControlMap(controlMap map[string]interface{}) map[string]node.ValueNod
 func eval(mem map[string]node.ValueNode, expr ast.Expr) (y node.ValueNode) {
 	switch x := expr.(type) {
 	case *ast.BasicLit: //表达式的值 类似于 a > 1 的1
+		fmt.Println("qweqwe", x)
 		return node.NewNodeByLit(x)
 	case *ast.Ident: //表达式的右边的值 类似于a > 1的a
 		return mem[x.Name]
@@ -77,7 +79,17 @@ func eval(mem map[string]node.ValueNode, expr ast.Expr) (y node.ValueNode) {
 		default:
 			return node.NewBadNode("a:" + right.GetTextValue() + "b:" + left.GetTextValue())
 		}
+	case *ast.UnaryExpr:
+		n := eval(mem, x.X)
+		if x.Op == token.SUB {
+			fn, ok := n.(node.FloatNode)
+			if ok {
+				fn.Value = -fn.Value
+				return fn
+			}
+		}
+		return node.NewBadNode(fmt.Sprintf("ast.UnaryExpr :%x type is not suppoort,%T", x))
 	default:
-		return node.NewBadNode(fmt.Sprintf("%x type is not suppoort", x))
+		return node.NewBadNode(fmt.Sprintf("%x type is not suppoort,%T", x, x))
 	}
 }
