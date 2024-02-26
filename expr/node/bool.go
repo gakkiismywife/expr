@@ -7,6 +7,7 @@ type BoolNode struct {
 	True      bool
 	Fields    []string
 	Expr      string
+	FieldMap  map[string]string
 }
 
 func (bNode BoolNode) GetTextValue() string {
@@ -34,5 +35,6 @@ func NewBoolNode(b bool, filed string) ValueNode {
 		True:      b,
 		textValue: fmt.Sprintf("%t", b),
 		Fields:    []string{filed},
+		FieldMap:  make(map[string]string),
 	}
 }

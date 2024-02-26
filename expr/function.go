@@ -42,6 +42,7 @@ func (b BinaryIntExpr) Invoke(x, y node.ValueNode, op token.Token, expr ast.Expr
 	bn := n.(node.BoolNode)
 	if bn.True {
 		bn.Expr = AstExprToString(expr)
+		bn.FieldMap[filed] = bn.Expr
 	}
 	return bn
 }
@@ -73,6 +74,7 @@ func (b BinaryFloatExpr) Invoke(x, y node.ValueNode, op token.Token, expr ast.Ex
 	bn := n.(node.BoolNode)
 	if bn.True {
 		bn.Expr = AstExprToString(expr)
+		bn.FieldMap[filed] = bn.Expr
 	}
 	return bn
 }
@@ -116,11 +118,22 @@ func (b BinaryBoolExpr) Invoke(x, y node.ValueNode, op token.Token, expr ast.Exp
 	if xb.True {
 		fields = append(fields, xb.Fields...)
 		exprCollect = fmt.Sprintf("%s", xb.Expr)
+		if len(xb.FieldMap) > 0 {
+			bn.FieldMap = mergeFieldMap(xb.FieldMap, bn.FieldMap)
+		}
 	}
 	//两个表达式相比较 如果右边的为true 说明右边的字段都是命中的，将右边表达式拼接起来
 	if yb.True {
-		exprCollect += fmt.Sprintf("%s%s", condition, yb.Expr)
+		//因为可能存在||的情况 x为false y为true 这样的情况下不需要拼接条件
+		if xb.True {
+			exprCollect += fmt.Sprintf("%s%s", condition, yb.Expr)
+		} else {
+			exprCollect += fmt.Sprintf("%s", yb.Expr)
+		}
 		fields = append(fields, yb.Fields...)
+		if len(yb.FieldMap) > 0 {
+			bn.FieldMap = mergeFieldMap(yb.FieldMap, bn.FieldMap)
+		}
 	}
 	bn.Fields = fields
 	bn.Expr = exprCollect
@@ -131,4 +144,16 @@ func AstExprToString(expr ast.Expr) string {
 	buf := bytes.NewBuffer([]byte{})
 	_ = printer.Fprint(buf, token.NewFileSet(), expr)
 	return buf.String()
+}
+
+func mergeFieldMap(m1 map[string]string, m2 map[string]string) map[string]string {
+	for k, v := range m2 {
+		t, ok := m1[k]
+		if ok {
+			m1[k] = fmt.Sprintf("%s && %s", t, v)
+		} else {
+			m1[k] = v
+		}
+	}
+	return m1
 }
